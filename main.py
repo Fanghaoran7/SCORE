@@ -149,7 +149,7 @@ if __name__ == '__main__':
     parser.add_argument('--patience', type=int, default=3)
 
     parser.add_argument('--data_name', type=str, default='tmall',
-                       choices=['tmall', 'yelp', 'ml', 'taobao'])
+                       choices=['tmall', 'yelp', 'taobao'])
     parser.add_argument('--neg_count', type=int, default=8)
     parser.add_argument('--topk', type=list, default=[10, 20, 50, 80])
     parser.add_argument('--metrics', type=list, default=['hit', 'ndcg'])
@@ -174,9 +174,6 @@ if __name__ == '__main__':
     elif args.data_name == 'yelp':
         args.data_path = './data/Yelp'
         args.behaviors = ['tip', 'neutral', 'neg', 'pos']
-    elif args.data_name == 'ml':
-        args.data_path = './data/ML10M'
-        args.behaviors = ['neutral', 'neg', 'pos']
     elif args.data_name == 'taobao':
         args.data_path = './data/taobao'
         args.behaviors = ['view', 'cart', 'buy']
@@ -219,4 +216,5 @@ if __name__ == '__main__':
         logger.info("="*60)
         logger.info("Starting Single Training Trial")
         logger.info("="*60)
+
         run_single_trial(args)
