@@ -40,10 +40,9 @@ class DistortionAwareFusion(nn.Module):
     def __init__(self, embed_dim, num_heads=1, dropout=0.1):
         super(DistortionAwareFusion, self).__init__()
         self.embed_dim = embed_dim
-        self.query_proj = nn.Linear(embed_dim, embed_dim)
-        self.key_proj = nn.Linear(embed_dim, embed_dim)
-        self.value_proj = nn.Linear(embed_dim, embed_dim)
-        self.output_proj = nn.Linear(embed_dim, embed_dim)
+        self.cross_attention = nn.MultiheadAttention(
+            embed_dim, num_heads, dropout=dropout, batch_first=True
+        )
         self.layer_norm1 = nn.LayerNorm(embed_dim)
         self.ffn = nn.Sequential(
             nn.Linear(embed_dim, embed_dim * 4),
@@ -52,24 +51,16 @@ class DistortionAwareFusion(nn.Module):
             nn.Linear(embed_dim * 4, embed_dim)
         )
         self.layer_norm2 = nn.LayerNorm(embed_dim)
-        self.dropout = nn.Dropout(dropout)
-        self.scaling = (embed_dim ** -0.5)
 
     def forward(self, u_gen, u_point):
-        query = self.query_proj(u_gen)
-        key = self.key_proj(u_point)
-        value = self.value_proj(u_point)
-        
-        attn_score = torch.matmul(query, key.T) * self.scaling
-        attn_weight = F.softmax(attn_score, dim=-1)
-        attn_weight = self.dropout(attn_weight)
-        
-        attn_output = torch.matmul(attn_weight, value)
-        attn_output = self.output_proj(attn_output)
-        fused_emb = self.layer_norm1(u_gen + attn_output)
+        query = u_gen.unsqueeze(1)
+        key = u_point.unsqueeze(1)
+        value = u_point.unsqueeze(1)
+        attn_output, _ = self.cross_attention(query, key, value)
+        fused_emb = self.layer_norm1(query + attn_output)
         ffn_output = self.ffn(fused_emb)
         final_user_emb = self.layer_norm2(fused_emb + ffn_output)
-        return final_user_emb
+        return final_user_emb.squeeze(1)
 
 
 class SCORE(nn.Module):
