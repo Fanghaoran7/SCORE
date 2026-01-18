@@ -1,1 +1,49 @@
-Here is the SCORE model code for submission to IJCAI 2026.
+# SCORE: Semantic-Structural Cross-Calibration for Multi-Behavior Recommendation
+# PaperID 973
+**Submitted to IJCAI 2026**
+
+## Installation
+
+```bash
+pip install torch>=1.9.0
+pip install numpy>=1.20.0
+pip install scipy>=1.7.0
+pip install scikit-learn>=0.24.0
+pip install loguru>=0.5.3
+pip install optuna>=2.10.0
+pip install tqdm>=4.60.0
+```
+
+## Directory Structure
+
+```
+project/
+├── dataset.py
+├── model.py
+├── lightgcn.py
+├── utils.py
+├── metrics.py
+├── trainer.py
+├── main.py
+├── data/
+│   ├── Tmall/
+│   ├── Yelp/
+│   └── taobao/
+├── log/
+├── check_point/
+└── README.md
+```
+
+## Training
+
+```bash
+python main.py
+
+python main.py --data_name tmall
+
+python main.py --data_name yelp
+
+python main.py --data_name ml
+
+python main.py --data_name taobao
+```
