@@ -9,13 +9,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 from loguru import logger
-import optuna
 import gc
 
 from dataset import DataSet
 from model import SCORE
 from trainer import Trainer
-
 
 torch.cuda.empty_cache()
 gc.collect()
@@ -30,50 +28,6 @@ if torch.cuda.is_available():
 torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
 os.environ['PYTHONHASHSEED'] = str(SEED)
-
-
-def objective(trial: optuna.trial.Trial, args: argparse.Namespace):
-    args.lr = trial.suggest_float('lr', 1e-5, 1e-2, log=True)
-    args.decay = trial.suggest_float('decay', 1e-5, 1e-2, log=True)
-    args.reg_weight = trial.suggest_float('reg_weight', 1e-5, 1e-2, log=True)
-    args.log_reg = trial.suggest_float('log_reg', 0.1, 0.9)
-    args.message_dropout = trial.suggest_float('message_dropout', 0.0, 0.3)
-    args.embedding_size = trial.suggest_categorical('embedding_size', [64, 128])
-    args.layers = trial.suggest_int('layers', 1, 4)
-    args.num_heads = trial.suggest_categorical('num_heads', [1, 2, 4])
-    args.purchase_weight = trial.suggest_float('purchase_weight', 0.1, 0.5)
-    args.gradient_accumulation_steps = trial.suggest_categorical('gradient_accumulation_steps', [1, 2, 4])
-    args.gcn_batch_size = trial.suggest_categorical('gcn_batch_size', [2048, 4096, 8192])
-
-    args.disable_tqdm = True
-    
-    torch.cuda.empty_cache()
-    gc.collect()
-
-    start = time.time()
-    try:
-        dataset = DataSet(args)
-        model = SCORE(args, dataset).to(args.device)
-        if args.gpu_no > 1:
-            model = nn.DataParallel(model, device_ids=[i for i in range(args.gpu_no)])
-
-        trainer = Trainer(model, dataset, args)
-        validation_score = trainer.train_model()
-        end = time.time()
-
-        logger.info(f"Trial {trial.number} finished in {(end - start):.2f}s with score: {validation_score:.4f}")
-        
-        del model, trainer, dataset
-        torch.cuda.empty_cache()
-        gc.collect()
-        
-        return validation_score
-    
-    except RuntimeError as e:
-        if 'out of memory' in str(e):
-            logger.warning(f"Trial {trial.number} OOM - suggesting smaller batch sizes")
-            raise optuna.TrialPruned()
-        raise
 
 
 def run_single_trial(args: argparse.Namespace):
@@ -125,11 +79,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('SCORE Model', add_help=False)
 
     parser.add_argument('--embedding_size', type=int, default=64)
-    parser.add_argument('--layers', type=int, default=2)
-    parser.add_argument('--num_heads', type=int, default=1)
+    parser.add_argument('--layers', type=int, default=4)
+    parser.add_argument('--num_heads', type=int, default=2)
 
     parser.add_argument('--gradient_accumulation_steps', type=int, default=2)
-    parser.add_argument('--gcn_batch_size', type=int, default=2048)
+    parser.add_argument('--gcn_batch_size', type=int, default=4096)
     parser.add_argument('--embed_batch_size', type=int, default=2048)
     parser.add_argument('--freeze_gcn_after', type=int, default=-1)
     parser.add_argument('--mixed_precision', action='store_true')
@@ -137,17 +91,17 @@ if __name__ == '__main__':
 
     parser.add_argument('--purchase_weight', type=float, default=0.3)
 
-    parser.add_argument('--lr', type=float, default=0.0001)
+    parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--decay', type=float, default=1e-4)
     parser.add_argument('--reg_weight', type=float, default=1e-4)
-    parser.add_argument('--log_reg', type=float, default=0.9)
+    parser.add_argument('--log_reg', type=float, default=0.5)
     parser.add_argument('--node_dropout', type=float, default=0.4)
-    parser.add_argument('--message_dropout', type=float, default=0.25)
+    parser.add_argument('--message_dropout', type=float, default=0.1)
     parser.add_argument('--batch_size', type=int, default=1024)
     parser.add_argument('--epochs', type=int, default=200)
-    parser.add_argument('--patience', type=int, default=2)
+    parser.add_argument('--patience', type=int, default=3)
 
-    parser.add_argument('--data_name', type=str, default='yelp',
+    parser.add_argument('--data_name', type=str, default='tmall',
                        choices=['tmall', 'yelp', 'taobao'])
     parser.add_argument('--neg_count', type=int, default=8)
     parser.add_argument('--topk', type=list, default=[10, 20, 50, 80])
@@ -155,12 +109,14 @@ if __name__ == '__main__':
     parser.add_argument('--test_batch_size', type=int, default=1024)
 
     parser.add_argument('--gpu_no', type=int, default=1)
-    parser.add_argument('--device', type=str, default='cuda:1')
+    parser.add_argument('--device', type=str, default='cuda:0')
     parser.add_argument('--model_path', type=str, default='./check_point')
     parser.add_argument('--model_name', type=str, default='SCORE')
     parser.add_argument('--if_load_model', type=bool, default=False)
     parser.add_argument('--check_point', type=str, default='')
 
+    parser.add_argument('--tune', action='store_true')
+    parser.add_argument('--n_trials', type=int, default=50)
     parser.add_argument('--tune', action='store_true')
     parser.add_argument('--n_trials', type=int, default=50)
     parser.add_argument('--metric_decimals', type=int, default=6)
@@ -202,17 +158,7 @@ if __name__ == '__main__':
         except Exception as e:
             pass
 
-    if args.tune:
-        logger.info("="*60)
-        logger.info("Starting Optuna Hyperparameter Tuning")
-        logger.info("="*60)
-        study = optuna.create_study(direction='maximize')
-        study.optimize(lambda trial: objective(trial, args), n_trials=args.n_trials)
-        best_trial = study.best_trial
-        logger.info(f"Best trial value: {best_trial.value:.4f}")
-        logger.info(f"Best params: {best_trial.params}")
-    else:
-        logger.info("="*60)
-        logger.info("Starting Single Training Trial")
-        logger.info("="*60)
-        run_single_trial(args)
+    logger.info("="*60)
+    logger.info("Starting Single Training Trial")
+    logger.info("="*60)
+    run_single_trial(args)

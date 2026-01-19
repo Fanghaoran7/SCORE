@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import os
 import json
-from dataset_film_pur import DataSet
+from dataset import DataSet
 from metrics import metrics_dict
 from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score
 
@@ -31,12 +31,7 @@ class Trainer:
         self.model_name = args.model_name
         self.patience = args.patience
         self.device = args.device
-        self.disable_tqdm = args.disable_tqdm
-
-        self.gradient_accumulation_steps = getattr(args, 'gradient_accumulation_steps', 2)
-        self.mixed_precision = getattr(args, 'mixed_precision', False)
-        self.pin_memory = getattr(args, 'pin_memory', True)
-        self.metric_decimals = int(getattr(args, 'metric_decimals', 6))
+        self.disable_tqdm = getattr(args, 'disable_tqdm', False)
 
         self._prepare_purchase_labels()
         self.optimizer = self.get_optimizer(self.model)
@@ -56,13 +51,6 @@ class Trainer:
             else:
                 out[k] = v
         return out
-
-    def _get_selection_key(self) -> str:
-        k = self.topk[0]
-        metrics_lower = [m.lower() for m in self.metrics]
-        if 'ndcg' in metrics_lower:
-            return f'ndcg@{k}'
-        return f'hit@{k}'
 
     def _prepare_purchase_labels(self):
         self.purchase_behavior_idx = len(self.behaviors) - 1
@@ -126,7 +114,7 @@ class Trainer:
             batch_size=self.batch_size,
             shuffle=True,
             num_workers=4,
-            pin_memory=self.pin_memory
+            pin_memory=True
         )
 
         best_result = -float('inf')
@@ -135,7 +123,7 @@ class Trainer:
         best_model = None
         final_test_raw = None
 
-        selection_key = self._get_selection_key()
+        selection_key = 'ndcg@10'
         if not self.disable_tqdm:
             logger.info(f"Model selection metric (raw): {selection_key}")
 
@@ -175,9 +163,9 @@ class Trainer:
                 val_metrics_display = {k: v for k, v in best_val_dict_raw.items() if not k.startswith('purchase_')}
                 test_metrics_display = {k: v for k, v in final_test_raw.items() if not k.startswith('purchase_')}
                 
-                logger.info(f"Validation (rounded): {self._round_metrics(val_metrics_display, self.metric_decimals)}")
+                logger.info(f"Validation (rounded): {self._round_metrics(val_metrics_display)}")
                 if final_test_raw is not None:
-                    logger.info(f"Test (rounded): {self._round_metrics(test_metrics_display, self.metric_decimals)}")
+                    logger.info(f"Test (rounded): {self._round_metrics(test_metrics_display)}")
 
         return best_result
 
@@ -288,7 +276,7 @@ class Trainer:
 
         metric_raw = self.calculate_result(np.array(topk_list), gt_length)
         if not self.disable_tqdm:
-            logger.info(f"{phase} Recommendation results (rounded): {self._round_metrics(metric_raw, self.metric_decimals)}")
+            logger.info(f"{phase} Recommendation results (rounded): {self._round_metrics(metric_raw)}")
         return metric_raw
 
     def evaluate_purchase_tendency(self, dataset, phase):
@@ -373,10 +361,10 @@ class Trainer:
                 continue
 
         return {
-            'purchase_auc': round(auc, self.metric_decimals),
-            'purchase_f1': round(best_f1, self.metric_decimals),
-            'purchase_precision': round(best_precision, self.metric_decimals),
-            'purchase_recall': round(best_recall, self.metric_decimals)
+            'purchase_auc': round(auc, 6),
+            'purchase_f1': round(best_f1, 6),
+            'purchase_precision': round(best_precision, 6),
+            'purchase_recall': round(best_recall, 6)
         }
 
     def calculate_result(self, topk_list, gt_len):
