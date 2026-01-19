@@ -35,8 +35,6 @@
 2025-11-23 21:53:52.123 | INFO     | __main__:run_single_trial:123 -   model_name: SCORE
 2025-11-23 21:53:52.123 | INFO     | __main__:run_single_trial:123 -   if_load_model: False
 2025-11-23 21:53:52.123 | INFO     | __main__:run_single_trial:123 -   check_point: 
-2025-11-23 21:53:52.123 | INFO     | __main__:run_single_trial:123 -   tune: False
-2025-11-23 21:53:52.124 | INFO     | __main__:run_single_trial:123 -   n_trials: 50
 2025-11-23 21:53:52.124 | INFO     | __main__:run_single_trial:123 -   data_path: ./data/taobao
 2025-11-23 21:53:52.124 | INFO     | __main__:run_single_trial:123 -   behaviors: ['view', 'cart', 'buy']
 2025-11-23 21:53:52.124 | INFO     | __main__:run_single_trial:123 -   disable_tqdm: False
@@ -44,7 +42,7 @@
 2025-11-23 21:53:52.124 | INFO     | __main__:run_single_trial:124 - ======================================================================
 2025-11-23 21:53:52.182 | INFO     | __main__:run_single_trial:132 - GPU Memory: 11.54 GB
 2025-11-23 21:53:52.183 | INFO     | __main__:run_single_trial:133 - CUDA Version: 12.1
-2025-11-23 21:55:00.235 | INFO     | trainer_film_pur1:_prepare_purchase_labels:64 - Purchase Labels - Validation: 48749/48749 positive, Test: 48749/48749 positive
+2025-11-23 21:55:00.235 | INFO     | trainer_film_pur1:_prepare_purchase_labels:64 - Purchase Labels - Validation: 48749.0/48749 positive, Test: 48749.0/48749 positive
 2025-11-23 21:55:00.896 | INFO     | __main__:run_single_trial:147 - SCORE(
   (message_dropout): Dropout(p=0.1, inplace=False)
   (user_embedding): Embedding(48750, 128, padding_idx=0)

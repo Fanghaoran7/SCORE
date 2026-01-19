@@ -31,8 +31,6 @@
 2026-01-11 15:53:04.341 | INFO     | __main__:run_single_trial:111 -   model_name: SCORE
 2026-01-11 15:53:04.341 | INFO     | __main__:run_single_trial:111 -   if_load_model: False
 2026-01-11 15:53:04.341 | INFO     | __main__:run_single_trial:111 -   check_point: 
-2026-01-11 15:53:04.342 | INFO     | __main__:run_single_trial:111 -   tune: False
-2026-01-11 15:53:04.342 | INFO     | __main__:run_single_trial:111 -   n_trials: 50
 2026-01-11 15:53:04.342 | INFO     | __main__:run_single_trial:111 -   metric_decimals: 6
 2026-01-11 15:53:04.342 | INFO     | __main__:run_single_trial:111 -   data_path: ./data/Yelp
 2026-01-11 15:53:04.342 | INFO     | __main__:run_single_trial:111 -   behaviors: ['tip', 'neutral', 'neg', 'pos']
