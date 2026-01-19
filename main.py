@@ -16,7 +16,6 @@ from dataset import DataSet
 from model import SCORE
 from trainer import Trainer
 
-os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 
 torch.cuda.empty_cache()
 gc.collect()
@@ -126,11 +125,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('SCORE Model', add_help=False)
 
     parser.add_argument('--embedding_size', type=int, default=64)
-    parser.add_argument('--layers', type=int, default=4)
-    parser.add_argument('--num_heads', type=int, default=2)
+    parser.add_argument('--layers', type=int, default=2)
+    parser.add_argument('--num_heads', type=int, default=1)
 
     parser.add_argument('--gradient_accumulation_steps', type=int, default=2)
-    parser.add_argument('--gcn_batch_size', type=int, default=4096)
+    parser.add_argument('--gcn_batch_size', type=int, default=2048)
     parser.add_argument('--embed_batch_size', type=int, default=2048)
     parser.add_argument('--freeze_gcn_after', type=int, default=-1)
     parser.add_argument('--mixed_precision', action='store_true')
@@ -138,17 +137,17 @@ if __name__ == '__main__':
 
     parser.add_argument('--purchase_weight', type=float, default=0.3)
 
-    parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--lr', type=float, default=0.0001)
     parser.add_argument('--decay', type=float, default=1e-4)
     parser.add_argument('--reg_weight', type=float, default=1e-4)
-    parser.add_argument('--log_reg', type=float, default=0.5)
+    parser.add_argument('--log_reg', type=float, default=0.9)
     parser.add_argument('--node_dropout', type=float, default=0.4)
-    parser.add_argument('--message_dropout', type=float, default=0.1)
+    parser.add_argument('--message_dropout', type=float, default=0.25)
     parser.add_argument('--batch_size', type=int, default=1024)
     parser.add_argument('--epochs', type=int, default=200)
-    parser.add_argument('--patience', type=int, default=3)
+    parser.add_argument('--patience', type=int, default=2)
 
-    parser.add_argument('--data_name', type=str, default='tmall',
+    parser.add_argument('--data_name', type=str, default='yelp',
                        choices=['tmall', 'yelp', 'taobao'])
     parser.add_argument('--neg_count', type=int, default=8)
     parser.add_argument('--topk', type=list, default=[10, 20, 50, 80])
@@ -156,7 +155,7 @@ if __name__ == '__main__':
     parser.add_argument('--test_batch_size', type=int, default=1024)
 
     parser.add_argument('--gpu_no', type=int, default=1)
-    parser.add_argument('--device', type=str, default='cuda:0')
+    parser.add_argument('--device', type=str, default='cuda:1')
     parser.add_argument('--model_path', type=str, default='./check_point')
     parser.add_argument('--model_name', type=str, default='SCORE')
     parser.add_argument('--if_load_model', type=bool, default=False)
@@ -216,5 +215,4 @@ if __name__ == '__main__':
         logger.info("="*60)
         logger.info("Starting Single Training Trial")
         logger.info("="*60)
-
         run_single_trial(args)

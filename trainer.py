@@ -11,12 +11,9 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import os
 import json
-from dataset import DataSet
+from dataset_film_pur import DataSet
 from metrics import metrics_dict
 from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score
-
-os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
-
 
 class Trainer:
     def __init__(self, model, dataset: DataSet, args):

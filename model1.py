@@ -8,10 +8,12 @@ import torch.nn.functional as F
 import numpy as np
 from dataset import DataSet
 from utils import BPRLoss, EmbLoss
-from lightGCN import LightGCN
+from lightgcn import LightGCN
+
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
+
 
 class FiLMGating(nn.Module):
-
     def __init__(self, embed_dim, bhv_dim, dropout=0.1):
         super(FiLMGating, self).__init__()
         self.gamma_gen = nn.Sequential(
@@ -34,18 +36,14 @@ class FiLMGating(nn.Module):
         return u_mod
 
 
-class SemanticStructuralCalibration(nn.Module):
-
+class DistortionAwareFusion(nn.Module):
     def __init__(self, embed_dim, num_heads=1, dropout=0.1):
-        super(SemanticStructuralCalibration, self).__init__()
+        super(DistortionAwareFusion, self).__init__()
         self.embed_dim = embed_dim
-        
-        self.W_Q = nn.Linear(embed_dim, embed_dim)
-        self.W_K = nn.Linear(embed_dim, embed_dim)
-        self.W_V = nn.Linear(embed_dim, embed_dim)
-        
+        self.cross_attention = nn.MultiheadAttention(
+            embed_dim, num_heads, dropout=dropout, batch_first=True
+        )
         self.layer_norm1 = nn.LayerNorm(embed_dim)
-        
         self.ffn = nn.Sequential(
             nn.Linear(embed_dim, embed_dim * 4),
             nn.GELU(),
@@ -53,25 +51,16 @@ class SemanticStructuralCalibration(nn.Module):
             nn.Linear(embed_dim * 4, embed_dim)
         )
         self.layer_norm2 = nn.LayerNorm(embed_dim)
-        self.scaling = (embed_dim ** -0.5)
-        self.dropout = nn.Dropout(dropout)
 
-    def forward(self, u_struct, u_sem):
-        Q = self.W_Q(u_struct)
-        K = self.W_K(u_sem)
-        V = self.W_V(u_sem)
-        
-        calibration_map = torch.sigmoid((Q * K) * self.scaling)
-        
-        calibrated_sem = calibration_map * V
-        calibrated_sem = self.dropout(calibrated_sem)
-        
-        hidden = self.layer_norm1(u_struct + calibrated_sem)
-        
-        ffn_out = self.ffn(hidden)
-        final_emb = self.layer_norm2(hidden + ffn_out)
-        
-        return final_emb
+    def forward(self, u_gen, u_point):
+        query = u_gen.unsqueeze(1)
+        key = u_point.unsqueeze(1)
+        value = u_point.unsqueeze(1)
+        attn_output, _ = self.cross_attention(query, key, value)
+        fused_emb = self.layer_norm1(query + attn_output)
+        ffn_output = self.ffn(fused_emb)
+        final_user_emb = self.layer_norm2(fused_emb + ffn_output)
+        return final_user_emb.squeeze(1)
 
 
 class SCORE(nn.Module):
@@ -99,7 +88,7 @@ class SCORE(nn.Module):
 
         self.user_embedding = nn.Embedding(self.n_users + 1, self.embedding_size, padding_idx=0)
         self.item_embedding = nn.Embedding(self.n_items + 1, self.embedding_size, padding_idx=0)
-        self.bhv_embs = nn.Parameter(torch.eye(len(self.behaviors)), requires_grad=False)
+        self.bhv_embs = nn.Parameter(torch.eye(len(self.behaviors)))
 
         self.global_Graph = LightGCN(self.device, self.layers, self.n_users + 1, 
                                      self.n_items + 1, dataset.all_inter_matrix)
@@ -112,7 +101,7 @@ class SCORE(nn.Module):
             dropout=args.message_dropout
         )
 
-        self.calibration_module = SemanticStructuralCalibration(
+        self.fusion_module = DistortionAwareFusion(
             embed_dim=self.embedding_size,
             num_heads=args.num_heads,
             dropout=args.message_dropout
@@ -210,8 +199,8 @@ class SCORE(nn.Module):
 
         u_final = self.film_gate(u_in, agg_item_emb, bhv_emb)
         u_final[mask] = 0
-        u_sem_ref = torch.sum(u_final, dim=1)
-        return u_sem_ref, None
+        u_final = torch.sum(u_final, dim=1)
+        return u_final, None
 
     def forward(self, batch_data):
         self._freeze_gcn_layers()
@@ -219,7 +208,6 @@ class SCORE(nn.Module):
         all_embeddings = torch.cat([self.user_embedding.weight, self.item_embedding.weight], dim=0)
         all_embeddings = self.global_Graph(all_embeddings)
         user_embedding, item_embedding = torch.split(all_embeddings, [self.n_users + 1, self.n_items + 1])
-        
         buy_embeddings = self.behavior_Graph(all_embeddings)
         user_buy_embedding, item_buy_embedding = torch.split(buy_embeddings, [self.n_users + 1, self.n_items + 1])
 
@@ -227,16 +215,10 @@ class SCORE(nn.Module):
         n_samples = batch_data[:, 1:-1, :].reshape(-1, 4)
         samples = torch.cat([p_samples, n_samples], dim=0)
         u_sample, i_samples, b_samples, gt_samples = torch.chunk(samples, 4, dim=-1)
-        
-        u_idx = u_sample.long().squeeze()
-        i_idx = i_samples.long().squeeze()
-        b_idx = b_samples.long().reshape(-1)
-        
-        u_emb_log = user_embedding[u_idx]
-        i_emb_log = item_embedding[i_idx]
-        bhv_emb_log = self.bhv_embs[b_idx]
-        
-        u_final_log = self.film_gate(u_emb_log, i_emb_log, bhv_emb_log)
+        u_emb_log = user_embedding[u_sample.long()].squeeze()
+        i_emb_log = item_embedding[i_samples.squeeze().long()]
+        bhv_emb = self.bhv_embs[b_samples.reshape(-1).long()]
+        u_final_log = self.film_gate(u_emb_log, i_emb_log, bhv_emb)
         log_loss_scores = torch.sum((u_final_log * i_emb_log), dim=-1).unsqueeze(1)
         log_loss = self.cross_loss(torch.sigmoid(log_loss_scores), gt_samples.float())
 
@@ -252,14 +234,11 @@ class SCORE(nn.Module):
             u_emb = user_embedding[user_samples]
             i_emb = item_embedding[item_samples]
 
-            u_sem_ref, _ = self.user_agg_item(user_samples, u_emb.unsqueeze(1), item_embedding)
-            u_sem_ref = u_sem_ref.squeeze(1)
-            
-            u_struct_ref = u_emb + user_buy_embedding[user_samples]
-            
+            u_point, _ = self.user_agg_item(user_samples, u_emb.unsqueeze(1), item_embedding)
+            u_point = u_point.squeeze(1)
+            u_gen = u_emb + user_buy_embedding[user_samples]
             i_final = i_emb + item_buy_embedding[item_samples]
-            
-            final_user_emb = self.calibration_module(u_struct_ref, u_sem_ref)
+            final_user_emb = self.fusion_module(u_gen, u_point)
 
             scores = torch.sum(final_user_emb.unsqueeze(1) * i_final, dim=-1)
             p_scores, n_scores = torch.chunk(scores, 2, dim=-1)
@@ -268,11 +247,11 @@ class SCORE(nn.Module):
             purchase_users = user_samples
             purchase_items = item_samples[:, 0]
             
-            user_embs_p = user_embedding[purchase_users]
-            item_embs_p = item_embedding[purchase_items]
-            behavior_embs_p = self.bhv_embs[-1].unsqueeze(0).repeat(len(purchase_users), 1)
+            user_embs = user_embedding[purchase_users]
+            item_embs = item_embedding[purchase_items]
+            behavior_embs = self.bhv_embs[-1].unsqueeze(0).repeat(len(purchase_users), 1)
 
-            purchase_probs = self.compute_purchase_tendency(user_embs_p, item_embs_p, behavior_embs_p)
+            purchase_probs = self.compute_purchase_tendency(user_embs, item_embs, behavior_embs)
             user_has_purchased = self.user_purchase_labels[purchase_users]
             purchase_tendency_loss = self.purchase_loss(purchase_probs, user_has_purchased)
 
@@ -291,7 +270,7 @@ class SCORE(nn.Module):
             buy_embeddings = self.behavior_Graph(all_embeddings)
             user_buy_embedding, item_buy_embedding = torch.split(buy_embeddings, [self.n_users + 1, self.n_items + 1])
 
-            storage_u_sem = torch.zeros(self.n_users + 1, self.embedding_size)
+            storage_u_point = torch.zeros(self.n_users + 1, self.embedding_size)
             test_users = [int(x) for x in self.test_users]
             tmp_emb_list = []
             test_batch_size = self.embed_batch_size
@@ -304,14 +283,14 @@ class SCORE(nn.Module):
                 tmp_emb_list.append(tmp_u_point.squeeze(1).cpu())
                 torch.cuda.empty_cache()
             
-            storage_u_sem[test_users] = torch.cat(tmp_emb_list, dim=0)
-            storage_u_struct = (user_embedding + user_buy_embedding).cpu()
+            storage_u_point[test_users] = torch.cat(tmp_emb_list, dim=0)
+
+            storage_u_gen = (user_embedding + user_buy_embedding).cpu()
 
             test_users_tensor = torch.LongTensor(test_users)
-            u_struct_test = storage_u_struct[test_users_tensor].to(self.device)
-            u_sem_test = storage_u_sem[test_users_tensor].to(self.device)
-            
-            final_test_user_embs = self.calibration_module(u_struct_test, u_sem_test)
+            u_gen_test = storage_u_gen[test_users_tensor].to(self.device)
+            u_point_test = storage_u_point[test_users_tensor].to(self.device)
+            final_test_user_embs = self.fusion_module(u_gen_test, u_point_test)
 
             self.storage_user_embeddings = torch.zeros(self.n_users + 1, self.embedding_size)
             self.storage_user_embeddings[test_users_tensor] = final_test_user_embs.cpu()

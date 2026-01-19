@@ -20,7 +20,7 @@ pip install tqdm>=4.60.0
 project/
 ├── dataset.py
 ├── model.py
-├── lightgcn.py
+├── lightGCN.py
 ├── utils.py
 ├── metrics.py
 ├── trainer.py
