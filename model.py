@@ -9,71 +9,7 @@ import numpy as np
 from dataset import DataSet
 from utils import BPRLoss, EmbLoss
 from lightGCN import LightGCN
-
-class FiLMGating(nn.Module):
-
-    def __init__(self, embed_dim, bhv_dim, dropout=0.1):
-        super(FiLMGating, self).__init__()
-        self.gamma_gen = nn.Sequential(
-            nn.Linear(embed_dim * 2 + bhv_dim, embed_dim),
-            nn.GELU(),
-            nn.Dropout(dropout)
-        )
-        self.beta_gen = nn.Sequential(
-            nn.Linear(embed_dim * 2 + bhv_dim, embed_dim),
-            nn.GELU(),
-            nn.Dropout(dropout)
-        )
-        self.gamma_norm = nn.LayerNorm(embed_dim)
-
-    def forward(self, u_emb, i_emb, bhv_emb):
-        x = torch.cat([u_emb, i_emb, bhv_emb], dim=-1)
-        gamma = self.gamma_norm(self.gamma_gen(x))
-        beta = self.beta_gen(x)
-        u_mod = gamma * u_emb + beta
-        return u_mod
-
-
-class SemanticStructuralCalibration(nn.Module):
-
-    def __init__(self, embed_dim, num_heads=1, dropout=0.1):
-        super(SemanticStructuralCalibration, self).__init__()
-        self.embed_dim = embed_dim
-        
-        self.W_Q = nn.Linear(embed_dim, embed_dim)
-        self.W_K = nn.Linear(embed_dim, embed_dim)
-        self.W_V = nn.Linear(embed_dim, embed_dim)
-        
-        self.layer_norm1 = nn.LayerNorm(embed_dim)
-        
-        self.ffn = nn.Sequential(
-            nn.Linear(embed_dim, embed_dim * 4),
-            nn.GELU(),
-            nn.Dropout(dropout),
-            nn.Linear(embed_dim * 4, embed_dim)
-        )
-        self.layer_norm2 = nn.LayerNorm(embed_dim)
-        self.scaling = (embed_dim ** -0.5)
-        self.dropout = nn.Dropout(dropout)
-
-    def forward(self, u_struct, u_sem):
-        Q = self.W_Q(u_struct)
-        K = self.W_K(u_sem)
-        V = self.W_V(u_sem)
-        
-        calibration_map = torch.sigmoid((Q * K) * self.scaling)
-        
-        calibrated_sem = calibration_map * V
-        calibrated_sem = self.dropout(calibrated_sem)
-        
-        hidden = self.layer_norm1(u_struct + calibrated_sem)
-        
-        ffn_out = self.ffn(hidden)
-        final_emb = self.layer_norm2(hidden + ffn_out)
-        
-        return final_emb
-
-
+# Core implementation details will be made publicly available upon paper acceptance.
 class SCORE(nn.Module):
     def __init__(self, args, dataset: DataSet):
         super(SCORE, self).__init__()
@@ -106,19 +42,11 @@ class SCORE(nn.Module):
         self.behavior_Graph = LightGCN(self.device, self.layers, self.n_users + 1, 
                                        self.n_items + 1, dataset.inter_matrix[-1])
 
-        self.film_gate = FiLMGating(
-            embed_dim=self.embedding_size,
-            bhv_dim=len(self.behaviors),
-            dropout=args.message_dropout
-        )
+        self.film_gate = FiLMGating(...)
 
-        self.calibration_module = SemanticStructuralCalibration(
-            embed_dim=self.embedding_size,
-            num_heads=args.num_heads,
-            dropout=args.message_dropout
-        )
+        self.calibration_module = SemanticStructuralCalibration(...)
 
-        self.purchase_weight = getattr(args, 'purchase_weight', 0.3)
+        self.purchase_weight = getattr(args, 'purchase_weight')
         purchase_input_dim = self.embedding_size * 2 + len(self.behaviors)
         self.purchase_predictor = nn.Sequential(
             nn.Linear(purchase_input_dim, self.embedding_size * 2),
@@ -320,4 +248,5 @@ class SCORE(nn.Module):
         user_emb = self.storage_user_embeddings[users.cpu().long()].to(self.device)
         item_emb = self.storage_item_embeddings.to(self.device)
         scores = torch.matmul(user_emb, item_emb.transpose(0, 1))
+
         return scores
