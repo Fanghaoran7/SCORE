@@ -131,7 +131,8 @@
 2026-01-11 18:30:45.694 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Validate Recommendation results (rounded): {'hit@10': 0.010712, 'ndcg@10': 0.004925, 'hit@20': 0.020394, 'ndcg@20': 0.007362, 'hit@50': 0.041459, 'ndcg@50': 0.011509, 'hit@80': 0.060617, 'ndcg@80': 0.014686}
 2026-01-11 18:31:00.664 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Test Recommendation results (rounded): {'hit@10': 0.059, 'ndcg@10': 0.028534, 'hit@20': 0.1035, 'ndcg@20': 0.039723, 'hit@50': 0.1993, 'ndcg@50': 0.058655, 'hit@80': 0.267, 'ndcg@80': 0.069927}
 2026-01-11 18:31:06.630 | INFO     | trainer_film_pur1:train_model:194 - Early stopping at epoch 11. Best epoch: 8
-2026-01-11 18:31:06.657 | INFO     | trainer_film_pur1:save_model:447 - Model saved to ./check_points/SCORE_a0.9_decay0.001_rw0.001_0111_1553012026-01-11_15_53_04.pth
+2026-01-11 18:31:06.657 | INFO     | trainer_film_pur1:save_model:447 - Model saved to ./check_points/
 2026-01-11 18:31:06.657 | INFO     | trainer_film_pur1:train_model:200 - Training finished. Best epoch: 8
 2026-01-11 18:31:06.658 | INFO     | trainer_film_pur1:train_model:202 - Validation (rounded): {'hit@10': 0.012051, 'ndcg@10': 0.005866, 'hit@20': 0.02194, 'ndcg@20': 0.008343, 'hit@50': 0.045064, 'ndcg@50': 0.012868, 'hit@80': 0.062059, 'ndcg@80': 0.015684}
 2026-01-11 18:31:06.658 | INFO     | trainer_film_pur1:train_model:204 - Test (rounded): {'hit@10': 0.0611, 'ndcg@10': 0.030217, 'hit@20': 0.0985, 'ndcg@20': 0.039682, 'hit@50': 0.1924, 'ndcg@50': 0.058192, 'hit@80': 0.2602, 'ndcg@80': 0.069455}
+
