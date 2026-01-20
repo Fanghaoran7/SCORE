@@ -219,6 +219,7 @@
 2025-11-24 06:19:38.976 | INFO     | trainer_film_pur1:evaluate_recommendation:249 - Validate Recommendation results: {'hit@10': np.float64(0.2565), 'ndcg@10': np.float64(0.1416), 'hit@20': np.float64(0.346), 'ndcg@20': np.float64(0.1642), 'hit@50': np.float64(0.4705), 'ndcg@50': np.float64(0.189), 'hit@80': np.float64(0.5307), 'ndcg@80': np.float64(0.199)}
 2025-11-24 06:20:20.418 | INFO     | trainer_film_pur1:evaluate_recommendation:249 - Test Recommendation results: {'hit@10': np.float64(0.2098), 'ndcg@10': np.float64(0.1124), 'hit@20': np.float64(0.2918), 'ndcg@20': np.float64(0.1331), 'hit@50': np.float64(0.4078), 'ndcg@50': np.float64(0.1562), 'hit@80': np.float64(0.4692), 'ndcg@80': np.float64(0.1664)}
 2025-11-24 06:20:42.646 | INFO     | trainer_film_pur1:train_model:142 - Early stopping at epoch 35.
-2025-11-24 06:20:42.740 | INFO     | trainer_film_pur1:save_model:372 - Model saved to ./check_point_evaluate/TRIB-MBR_Full_taobao2025-11-23_21_53_52.pth
+2025-11-24 06:20:42.740 | INFO     | trainer_film_pur1:save_model:372 - Model saved to ./check_point/
 2025-11-24 06:20:42.741 | INFO     | trainer_film_pur1:train_model:147 - Training finished. Best epoch: 31
 2025-11-24 06:20:42.741 | INFO     | trainer_film_pur1:train_model:148 - Validation: {'hit@10': np.float64(0.2632), 'ndcg@10': np.float64(0.1451), 'hit@20': np.float64(0.3555), 'ndcg@20': np.float64(0.1684), 'hit@50': np.float64(0.4801), 'ndcg@50': np.float64(0.1932), 'hit@80': np.float64(0.54), 'ndcg@80': np.float64(0.2032)}, Test: {'hit@10': np.float64(0.2172), 'ndcg@10': np.float64(0.1161), 'hit@20': np.float64(0.3007), 'ndcg@20': np.float64(0.1371), 'hit@50': np.float64(0.4206), 'ndcg@50': np.float64(0.161), 'hit@80': np.float64(0.4816), 'ndcg@80': np.float64(0.1711)}
+
