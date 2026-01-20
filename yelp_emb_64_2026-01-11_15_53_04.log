@@ -1,0 +1,137 @@
+2026-01-11 15:53:04.335 | INFO     | __main__:run_single_trial:107 - ============================================================
+2026-01-11 15:53:04.336 | INFO     | __main__:run_single_trial:108 - Enhanced Experiment Settings (Memory-Optimized)
+2026-01-11 15:53:04.336 | INFO     | __main__:run_single_trial:109 - ============================================================
+2026-01-11 15:53:04.336 | INFO     | __main__:run_single_trial:111 -   embedding_size: 64
+2026-01-11 15:53:04.337 | INFO     | __main__:run_single_trial:111 -   layers: 2
+2026-01-11 15:53:04.337 | INFO     | __main__:run_single_trial:111 -   num_heads: 1
+2026-01-11 15:53:04.337 | INFO     | __main__:run_single_trial:111 -   gradient_accumulation_steps: 2
+2026-01-11 15:53:04.337 | INFO     | __main__:run_single_trial:111 -   gcn_batch_size: 2048
+2026-01-11 15:53:04.337 | INFO     | __main__:run_single_trial:111 -   embed_batch_size: 2048
+2026-01-11 15:53:04.338 | INFO     | __main__:run_single_trial:111 -   freeze_gcn_after: -1
+2026-01-11 15:53:04.338 | INFO     | __main__:run_single_trial:111 -   mixed_precision: False
+2026-01-11 15:53:04.338 | INFO     | __main__:run_single_trial:111 -   pin_memory: True
+2026-01-11 15:53:04.338 | INFO     | __main__:run_single_trial:111 -   purchase_weight: 0.3
+2026-01-11 15:53:04.338 | INFO     | __main__:run_single_trial:111 -   lr: 0.0001
+2026-01-11 15:53:04.339 | INFO     | __main__:run_single_trial:111 -   decay: 0.001
+2026-01-11 15:53:04.339 | INFO     | __main__:run_single_trial:111 -   reg_weight: 0.001
+2026-01-11 15:53:04.339 | INFO     | __main__:run_single_trial:111 -   log_reg: 0.9
+2026-01-11 15:53:04.339 | INFO     | __main__:run_single_trial:111 -   node_dropout: 0.4
+2026-01-11 15:53:04.339 | INFO     | __main__:run_single_trial:111 -   message_dropout: 0.25
+2026-01-11 15:53:04.339 | INFO     | __main__:run_single_trial:111 -   batch_size: 1024
+2026-01-11 15:53:04.340 | INFO     | __main__:run_single_trial:111 -   epochs: 30
+2026-01-11 15:53:04.340 | INFO     | __main__:run_single_trial:111 -   patience: 2
+2026-01-11 15:53:04.340 | INFO     | __main__:run_single_trial:111 -   data_name: yelp
+2026-01-11 15:53:04.340 | INFO     | __main__:run_single_trial:111 -   neg_count: 8
+2026-01-11 15:53:04.340 | INFO     | __main__:run_single_trial:111 -   topk: [10, 20, 50, 80]
+2026-01-11 15:53:04.340 | INFO     | __main__:run_single_trial:111 -   metrics: ['hit', 'ndcg']
+2026-01-11 15:53:04.341 | INFO     | __main__:run_single_trial:111 -   test_batch_size: 1024
+2026-01-11 15:53:04.341 | INFO     | __main__:run_single_trial:111 -   gpu_no: 1
+2026-01-11 15:53:04.341 | INFO     | __main__:run_single_trial:111 -   device: cuda:1
+2026-01-11 15:53:04.341 | INFO     | __main__:run_single_trial:111 -   model_path: ./check_point
+2026-01-11 15:53:04.341 | INFO     | __main__:run_single_trial:111 -   model_name: SCORE
+2026-01-11 15:53:04.341 | INFO     | __main__:run_single_trial:111 -   if_load_model: False
+2026-01-11 15:53:04.341 | INFO     | __main__:run_single_trial:111 -   check_point: 
+2026-01-11 15:53:04.342 | INFO     | __main__:run_single_trial:111 -   metric_decimals: 6
+2026-01-11 15:53:04.342 | INFO     | __main__:run_single_trial:111 -   data_path: ./data/Yelp
+2026-01-11 15:53:04.342 | INFO     | __main__:run_single_trial:111 -   behaviors: ['tip', 'neutral', 'neg', 'pos']
+2026-01-11 15:53:04.342 | INFO     | __main__:run_single_trial:111 -   disable_tqdm: False
+2026-01-11 15:53:04.342 | INFO     | __main__:run_single_trial:111 -   TIME: 2026-01-11_15_53_04
+2026-01-11 15:53:04.343 | INFO     | __main__:run_single_trial:112 - ============================================================
+2026-01-11 15:53:04.343 | INFO     | __main__:run_single_trial:122 - GPU Memory: 11.54 GB
+2026-01-11 15:53:04.343 | INFO     | __main__:run_single_trial:123 - CUDA Version: 12.1
+2026-01-11 15:53:56.298 | INFO     | trainer_film_pur1:_prepare_purchase_labels:95 - Purchase Labels - Validation: 19417.0/19417 positive, Test: 10000.0/10000 positive
+2026-01-11 15:53:56.894 | INFO     | __main__:run_single_trial:137 - SCORE(
+  (message_dropout): Dropout(p=0.25, inplace=False)
+  (user_embedding): Embedding(19801, 64, padding_idx=0)
+  (item_embedding): Embedding(22735, 64, padding_idx=0)
+  (global_Graph): LightGCN()
+  (behavior_Graph): LightGCN()
+  (film_gate): FiLMGating(
+    (gamma_gen): Sequential(
+      (0): Linear(in_features=132, out_features=64, bias=True)
+      (1): GELU(approximate='none')
+      (2): Dropout(p=0.25, inplace=False)
+    )
+    (beta_gen): Sequential(
+      (0): Linear(in_features=132, out_features=64, bias=True)
+      (1): GELU(approximate='none')
+      (2): Dropout(p=0.25, inplace=False)
+    )
+    (gamma_norm): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+  )
+  (calibration_module): SemanticStructuralCalibration(
+    (W_Q): Linear(in_features=64, out_features=64, bias=True)
+    (W_K): Linear(in_features=64, out_features=64, bias=True)
+    (W_V): Linear(in_features=64, out_features=64, bias=True)
+    (layer_norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+    (ffn): Sequential(
+      (0): Linear(in_features=64, out_features=256, bias=True)
+      (1): GELU(approximate='none')
+      (2): Dropout(p=0.25, inplace=False)
+      (3): Linear(in_features=256, out_features=64, bias=True)
+    )
+    (layer_norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+    (dropout): Dropout(p=0.25, inplace=False)
+  )
+  (purchase_predictor): Sequential(
+    (0): Linear(in_features=132, out_features=128, bias=True)
+    (1): ReLU()
+    (2): Dropout(p=0.25, inplace=False)
+    (3): Linear(in_features=128, out_features=64, bias=True)
+    (4): ReLU()
+    (5): Linear(in_features=64, out_features=1, bias=True)
+    (6): Sigmoid()
+  )
+  (bpr_loss): BPRLoss()
+  (emb_loss): EmbLoss()
+  (cross_loss): BCELoss()
+  (purchase_loss): BCELoss()
+)
+2026-01-11 15:53:56.895 | INFO     | __main__:run_single_trial:138 - Number of trainable parameters: 2814801
+2026-01-11 15:53:56.900 | INFO     | trainer_film_pur1:train_model:165 - Model selection metric (raw): ndcg@10
+2026-01-11 16:07:46.088 | INFO     | trainer_film_pur1:_train_one_epoch:263 - Epoch 1 [829.19s]: Train loss: 0.216134
+2026-01-11 16:07:53.431 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Validate Recommendation results (rounded): {'hit@10': 0.002266, 'ndcg@10': 0.001174, 'hit@20': 0.004687, 'ndcg@20': 0.001774, 'hit@50': 0.011279, 'ndcg@50': 0.003078, 'hit@80': 0.018077, 'ndcg@80': 0.004205}
+2026-01-11 16:08:07.031 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Test Recommendation results (rounded): {'hit@10': 0.0272, 'ndcg@10': 0.012263, 'hit@20': 0.0491, 'ndcg@20': 0.017772, 'hit@50': 0.1077, 'ndcg@50': 0.029281, 'hit@80': 0.1575, 'ndcg@80': 0.037545}
+2026-01-11 16:08:12.194 | INFO     | trainer_film_pur1:train_model:188 - New best model @ epoch 1: ndcg@10=0.00117419
+2026-01-11 16:22:04.734 | INFO     | trainer_film_pur1:_train_one_epoch:263 - Epoch 2 [832.54s]: Train loss: 0.154399
+2026-01-11 16:22:12.278 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Validate Recommendation results (rounded): {'hit@10': 0.004275, 'ndcg@10': 0.002175, 'hit@20': 0.007365, 'ndcg@20': 0.002937, 'hit@50': 0.017922, 'ndcg@50': 0.004998, 'hit@80': 0.027965, 'ndcg@80': 0.00667}
+2026-01-11 16:22:25.807 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Test Recommendation results (rounded): {'hit@10': 0.0408, 'ndcg@10': 0.018909, 'hit@20': 0.0705, 'ndcg@20': 0.026346, 'hit@50': 0.1396, 'ndcg@50': 0.039906, 'hit@80': 0.196, 'ndcg@80': 0.049267}
+2026-01-11 16:22:30.955 | INFO     | trainer_film_pur1:train_model:188 - New best model @ epoch 2: ndcg@10=0.00217523
+2026-01-11 16:36:24.318 | INFO     | trainer_film_pur1:_train_one_epoch:263 - Epoch 3 [833.36s]: Train loss: 0.140414
+2026-01-11 16:36:31.518 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Validate Recommendation results (rounded): {'hit@10': 0.006489, 'ndcg@10': 0.002901, 'hit@20': 0.011742, 'ndcg@20': 0.004218, 'hit@50': 0.025648, 'ndcg@50': 0.006945, 'hit@80': 0.038008, 'ndcg@80': 0.008992}
+2026-01-11 16:36:45.468 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Test Recommendation results (rounded): {'hit@10': 0.0446, 'ndcg@10': 0.0206, 'hit@20': 0.0816, 'ndcg@20': 0.029838, 'hit@50': 0.1587, 'ndcg@50': 0.044964, 'hit@80': 0.2155, 'ndcg@80': 0.054399}
+2026-01-11 16:36:51.051 | INFO     | trainer_film_pur1:train_model:188 - New best model @ epoch 3: ndcg@10=0.00290080
+2026-01-11 16:50:42.020 | INFO     | trainer_film_pur1:_train_one_epoch:263 - Epoch 4 [830.97s]: Train loss: 0.131867
+2026-01-11 16:50:49.191 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Validate Recommendation results (rounded): {'hit@10': 0.007365, 'ndcg@10': 0.003584, 'hit@20': 0.013493, 'ndcg@20': 0.005128, 'hit@50': 0.030025, 'ndcg@50': 0.008382, 'hit@80': 0.045373, 'ndcg@80': 0.010921}
+2026-01-11 16:51:02.950 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Test Recommendation results (rounded): {'hit@10': 0.0521, 'ndcg@10': 0.02424, 'hit@20': 0.0884, 'ndcg@20': 0.033352, 'hit@50': 0.172, 'ndcg@50': 0.049745, 'hit@80': 0.2399, 'ndcg@80': 0.061012}
+2026-01-11 16:51:08.080 | INFO     | trainer_film_pur1:train_model:188 - New best model @ epoch 4: ndcg@10=0.00358444
+2026-01-11 17:04:57.086 | INFO     | trainer_film_pur1:_train_one_epoch:263 - Epoch 5 [829.01s]: Train loss: 0.125593
+2026-01-11 17:05:04.402 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Validate Recommendation results (rounded): {'hit@10': 0.008549, 'ndcg@10': 0.004042, 'hit@20': 0.01612, 'ndcg@20': 0.005926, 'hit@50': 0.035484, 'ndcg@50': 0.009718, 'hit@80': 0.052016, 'ndcg@80': 0.012455}
+2026-01-11 17:05:17.984 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Test Recommendation results (rounded): {'hit@10': 0.0559, 'ndcg@10': 0.027446, 'hit@20': 0.0914, 'ndcg@20': 0.036383, 'hit@50': 0.175, 'ndcg@50': 0.052887, 'hit@80': 0.2458, 'ndcg@80': 0.06463}
+2026-01-11 17:05:23.239 | INFO     | trainer_film_pur1:train_model:188 - New best model @ epoch 5: ndcg@10=0.00404219
+2026-01-11 17:19:14.754 | INFO     | trainer_film_pur1:_train_one_epoch:263 - Epoch 6 [831.51s]: Train loss: 0.120890
+2026-01-11 17:19:22.309 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Validate Recommendation results (rounded): {'hit@10': 0.010712, 'ndcg@10': 0.005009, 'hit@20': 0.018798, 'ndcg@20': 0.007023, 'hit@50': 0.039759, 'ndcg@50': 0.011141, 'hit@80': 0.057372, 'ndcg@80': 0.014061}
+2026-01-11 17:19:35.378 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Test Recommendation results (rounded): {'hit@10': 0.0569, 'ndcg@10': 0.028281, 'hit@20': 0.0941, 'ndcg@20': 0.037553, 'hit@50': 0.1835, 'ndcg@50': 0.055074, 'hit@80': 0.2494, 'ndcg@80': 0.066028}
+2026-01-11 17:19:40.279 | INFO     | trainer_film_pur1:train_model:188 - New best model @ epoch 6: ndcg@10=0.00500873
+2026-01-11 17:33:29.982 | INFO     | trainer_film_pur1:_train_one_epoch:263 - Epoch 7 [829.70s]: Train loss: 0.117133
+2026-01-11 17:33:37.063 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Validate Recommendation results (rounded): {'hit@10': 0.010815, 'ndcg@10': 0.005306, 'hit@20': 0.01957, 'ndcg@20': 0.007504, 'hit@50': 0.042489, 'ndcg@50': 0.012027, 'hit@80': 0.061183, 'ndcg@80': 0.01512}
+2026-01-11 17:33:50.354 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Test Recommendation results (rounded): {'hit@10': 0.0576, 'ndcg@10': 0.027892, 'hit@20': 0.1013, 'ndcg@20': 0.038835, 'hit@50': 0.1878, 'ndcg@50': 0.055933, 'hit@80': 0.2551, 'ndcg@80': 0.067081}
+2026-01-11 17:33:55.271 | INFO     | trainer_film_pur1:train_model:188 - New best model @ epoch 7: ndcg@10=0.00530577
+2026-01-11 17:47:45.788 | INFO     | trainer_film_pur1:_train_one_epoch:263 - Epoch 8 [830.52s]: Train loss: 0.114533
+2026-01-11 17:47:53.144 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Validate Recommendation results (rounded): {'hit@10': 0.012051, 'ndcg@10': 0.005866, 'hit@20': 0.02194, 'ndcg@20': 0.008343, 'hit@50': 0.045064, 'ndcg@50': 0.012868, 'hit@80': 0.062059, 'ndcg@80': 0.015684}
+2026-01-11 17:48:08.156 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Test Recommendation results (rounded): {'hit@10': 0.0611, 'ndcg@10': 0.030217, 'hit@20': 0.0985, 'ndcg@20': 0.039682, 'hit@50': 0.1924, 'ndcg@50': 0.058192, 'hit@80': 0.2602, 'ndcg@80': 0.069455}
+2026-01-11 17:48:13.208 | INFO     | trainer_film_pur1:train_model:188 - New best model @ epoch 8: ndcg@10=0.00586639
+2026-01-11 18:02:02.871 | INFO     | trainer_film_pur1:_train_one_epoch:263 - Epoch 9 [829.66s]: Train loss: 0.112269
+2026-01-11 18:02:10.483 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Validate Recommendation results (rounded): {'hit@10': 0.011279, 'ndcg@10': 0.005391, 'hit@20': 0.020858, 'ndcg@20': 0.007785, 'hit@50': 0.045115, 'ndcg@50': 0.012557, 'hit@80': 0.062883, 'ndcg@80': 0.015501}
+2026-01-11 18:02:25.435 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Test Recommendation results (rounded): {'hit@10': 0.0547, 'ndcg@10': 0.02709, 'hit@20': 0.0968, 'ndcg@20': 0.03769, 'hit@50': 0.1957, 'ndcg@50': 0.05721, 'hit@80': 0.2621, 'ndcg@80': 0.068247}
+2026-01-11 18:16:20.614 | INFO     | trainer_film_pur1:_train_one_epoch:263 - Epoch 10 [830.08s]: Train loss: 0.110826
+2026-01-11 18:16:28.175 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Validate Recommendation results (rounded): {'hit@10': 0.012, 'ndcg@10': 0.00551, 'hit@20': 0.02127, 'ndcg@20': 0.007819, 'hit@50': 0.042695, 'ndcg@50': 0.01202, 'hit@80': 0.06139, 'ndcg@80': 0.015123}
+2026-01-11 18:16:42.100 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Test Recommendation results (rounded): {'hit@10': 0.0596, 'ndcg@10': 0.02839, 'hit@20': 0.104, 'ndcg@20': 0.039458, 'hit@50': 0.1931, 'ndcg@50': 0.057029, 'hit@80': 0.2647, 'ndcg@80': 0.068912}
+2026-01-11 18:30:38.227 | INFO     | trainer_film_pur1:_train_one_epoch:263 - Epoch 11 [831.20s]: Train loss: 0.109442
+2026-01-11 18:30:45.694 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Validate Recommendation results (rounded): {'hit@10': 0.010712, 'ndcg@10': 0.004925, 'hit@20': 0.020394, 'ndcg@20': 0.007362, 'hit@50': 0.041459, 'ndcg@50': 0.011509, 'hit@80': 0.060617, 'ndcg@80': 0.014686}
+2026-01-11 18:31:00.664 | INFO     | trainer_film_pur1:evaluate_recommendation:322 - Test Recommendation results (rounded): {'hit@10': 0.059, 'ndcg@10': 0.028534, 'hit@20': 0.1035, 'ndcg@20': 0.039723, 'hit@50': 0.1993, 'ndcg@50': 0.058655, 'hit@80': 0.267, 'ndcg@80': 0.069927}
+2026-01-11 18:31:06.630 | INFO     | trainer_film_pur1:train_model:194 - Early stopping at epoch 11. Best epoch: 8
+2026-01-11 18:31:06.657 | INFO     | trainer_film_pur1:save_model:447 - Model saved to ./check_points/SCORE_a0.9_decay0.001_rw0.001_0111_1553012026-01-11_15_53_04.pth
+2026-01-11 18:31:06.657 | INFO     | trainer_film_pur1:train_model:200 - Training finished. Best epoch: 8
+2026-01-11 18:31:06.658 | INFO     | trainer_film_pur1:train_model:202 - Validation (rounded): {'hit@10': 0.012051, 'ndcg@10': 0.005866, 'hit@20': 0.02194, 'ndcg@20': 0.008343, 'hit@50': 0.045064, 'ndcg@50': 0.012868, 'hit@80': 0.062059, 'ndcg@80': 0.015684}
+2026-01-11 18:31:06.658 | INFO     | trainer_film_pur1:train_model:204 - Test (rounded): {'hit@10': 0.0611, 'ndcg@10': 0.030217, 'hit@20': 0.0985, 'ndcg@20': 0.039682, 'hit@50': 0.1924, 'ndcg@50': 0.058192, 'hit@80': 0.2602, 'ndcg@80': 0.069455}
