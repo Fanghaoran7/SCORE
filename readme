@@ -1,10 +1,16 @@
 # SCORE: Semantic-Structural Cross-Calibration for Multi-Behavior Recommendation
-# PaperID 973
-**Submitted to IJCAI 2026**
+PaperID: 973  
+Submitted to IJCAI 2026
 
-## Installation
+This repository provides the anonymous implementation of **SCORE**, a framework for multi-behavior recommendation that addresses **structural distortion** and **semantic drift** in unified interaction graphs.
 
-```bash
+---
+
+# 1. Installation
+
+The implementation is based on **Python 3.8+** and **PyTorch**.
+Install dependencies:
+
 pip install torch>=1.9.0
 pip install numpy>=1.20.0
 pip install scipy>=1.7.0
@@ -12,38 +18,106 @@ pip install scikit-learn>=0.24.0
 pip install loguru>=0.5.3
 pip install optuna>=2.10.0
 pip install tqdm>=4.60.0
-```
 
-## Directory Structure
+# 2. Directory Structure
 
-```
 project/
-├── dataset.py
-├── model.py
-├── lightGCN.py
-├── utils.py
-├── metrics.py
-├── trainer.py
-├── main.py
-├── data/
+├── dataset.py              # data loading
+├── model.py                # SCORE model
+├── lightGCN.py             # LightGCN propagation module
+├── utils.py                # utility functions
+├── metrics.py              # evaluation metrics
+├── trainer.py              # training pipeline
+├── main.py                 # training entry
+├── data/                   
 │   ├── Tmall/
 │   ├── Yelp/
 │   └── taobao/
-├── log/
-├── check_point/
+├── log/                    # training logs
+├── check_point/            # saved models
 └── README.md
-```
 
-## Training
+# 3. Datasets
 
-```bash
-python main.py
+We directly use the processed datasets released by the BCIPM work.
+The datasets include: Tmall、Taobao、Yelp.
+• Taobao: An e-commerce dataset under the Alibaba Group containing behaviors click, cart, and purchase. We treat purchase as the target behavior, while click and cart serve as auxiliary behaviors. 
+• Tmall: Another widely-used e-commerce dataset from Alibaba with behaviors click,collect,cart,andpurchase. The target behavior is designated as purchase. 
+• Yelp: A business review dataset comprising tips and ratings. Ratings r are discretized into dislike(r≤2),neutral (2<r<4),and like(r≥4). The like behavior is treated as the target, with others acting as auxiliary signals.
+The data format follows the same structure used in prior multi-behavior recommendation studies.
 
-python main.py --data_name tmall
+# 4. Data Split
 
-python main.py --data_name yelp
+We follow the evaluation protocol used in BCIPM.
+Specifically, the datasets are pre-split using the leave-one-out strategy.
+For each user:
+• the most recent interaction is used for testing
+• the second most recent interaction is used for validation
+• the remaining interactions are used for training
+This protocol is widely adopted in recommendation research.
 
-python main.py --data_name ml
+# 5. Evaluation Metrics
 
-python main.py --data_name taobao
-```
+We adopt full-ranking evaluation.
+For each test user, the model ranks all candidate items that do not appear in the user's training interactions.
+Evaluation metrics:
+• HR@K (Hit Ratio)
+• NDCG@K (Normalized Discounted Cumulative Gain)
+We evaluate the model at: K ∈ {10, 20, 50, 80}. The paper mainly reports HR@10 and NDCG@10.
+
+# 6. Training Settings
+
+Unless otherwise specified, the following training settings are used.
+| Parameter | Value |
+|----------|------|
+Embedding dimension | {64, 128} |
+Batch size | 1024 |
+Optimizer | Adam |
+GCN propagation layers | 2 |
+The model is trained with a joint objective consisting of:
+• Target ranking loss (BPR)
+• Behavior-level discrimination loss
+• Target propensity loss
+• L2 regularization
+During training, random negative sampling is adopted:
+• 8 negative samples per positive instance for the behavior BCE loss and target propensity loss
+• 1 negative item per positive interaction for the target BPR ranking loss
+Model selection is based on NDCG@10 on the validation set. Results reported in the paper are averaged over 5 runs with different random seeds. Early stopping is applied if validation NDCG@10 does not improve for 10 consecutive epochs.
+All experiments are implemented in PyTorch and executed on a Linux server with an NVIDIA GPU (~12GB memory).
+
+# 7. Hyperparameter Search
+
+Hyperparameters are tuned using grid search on the validation set.
+Search ranges:
+Learning rate 
+  - [1e-4, 1e-3, 1e-2]
+Loss weighting coefficients
+  - λ₁ ∈ [0.1, 0.3, 0.5, 0.7, 0.9]
+  - λ₂ ∈ [0.1, 0.3, 0.5, 0.7, 0.9]
+Regularization coefficient
+  - µ ∈ [1e-4, 1e-3, 1e-2]
+The best configuration is selected according to NDCG@10 on the validation set.
+
+# 8. Baseline Models
+
+For fair comparison:
+• All baseline models follow the same dataset split and evaluation protocol.
+• Baseline implementations follow the settings described in their original papers.
+• Hyperparameters are tuned on the validation set when necessary.
+The tuning ranges follow commonly used values reported in the recommendation literature.
+
+# 9. Training
+
+Run training with default settings:
+ python main.py
+Run training on specific datasets:
+ python main.py --data_name tmall
+ python main.py --data_name yelp
+ python main.py --data_name taobao
+
+# 10. Logs and Checkpoints
+
+Training logs are stored in:
+ log/
+Model checkpoints are saved to:
+ check_point/
