@@ -1,6 +1,6 @@
 # SCORE: Semantic-Structural Cross-Calibration for Multi-Behavior Recommendation
-PaperID: 973  
-Submitted to IJCAI 2026
+PaperID: 331  
+Submitted to CIKM 2026
 
 This repository provides the anonymous implementation of **SCORE**, a framework for multi-behavior recommendation that addresses **structural distortion** and **semantic drift** in unified interaction graphs.
 
